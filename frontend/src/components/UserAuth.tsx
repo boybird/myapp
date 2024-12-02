@@ -6,6 +6,10 @@ interface User {
   name: string;
 }
 
+interface UserAuthProps {
+  onAvatarClick: () => void;
+}
+
 interface LoginFormProps {
   onClose: () => void;
   onLogin: () => void;
@@ -86,7 +90,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onClose, onLogin }) => {
   );
 };
 
-export const UserAuth: React.FC = () => {
+export const UserAuth: React.FC<UserAuthProps> = ({ onAvatarClick }) => {
   const [user, setUser] = useState<User | null>(null);
   const [showLogin, setShowLogin] = useState(false);
 
@@ -136,7 +140,8 @@ export const UserAuth: React.FC = () => {
           <img
             src={getGravatarUrl(user.email)}
             alt={user.name}
-            className="w-10 h-10 rounded-full"
+            className="w-10 h-10 rounded-full cursor-pointer"
+            onClick={onAvatarClick}
           />
           <div className="relative group">
             <button className="text-gray-700 hover:text-gray-900">{user.name}</button>
