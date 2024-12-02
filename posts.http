@@ -1,0 +1,69 @@
+@baseUrl = http://localhost:5150
+@email = test@example.com
+@password = your_password
+
+### First login to get the JWT token
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "{{email}}",
+    "password": "{{password}}"
+}
+
+### Store the JWT token from the login response
+@authToken = {{login.response.body.token}}
+
+### Create a new blog post
+POST {{baseUrl}}/api/posts
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "title": "My First Blog Post",
+    "content": "This is the content of my first blog post. It can be quite long and contain markdown formatting.",
+    "summary": "A brief summary of my first post",
+    "published": true
+}
+
+### Get all published posts (public endpoint)
+GET {{baseUrl}}/api/posts
+
+### Get all my posts (including drafts)
+GET {{baseUrl}}/api/posts/my
+Authorization: Bearer {{authToken}}
+
+### Get a specific post by ID
+# Replace :id with an actual post ID
+GET {{baseUrl}}/api/posts/1
+
+### Update a post
+# Replace :id with an actual post ID
+PUT {{baseUrl}}/api/posts/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "title": "Updated Blog Post Title",
+    "content": "Updated content for my blog post",
+    "summary": "Updated summary",
+    "published": true
+}
+
+### Delete a post
+# Replace :id with an actual post ID
+DELETE {{baseUrl}}/api/posts/1
+Authorization: Bearer {{authToken}}
+
+### Test creating a draft post
+POST {{baseUrl}}/api/posts
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "title": "Draft Blog Post",
+    "content": "This is a draft post that won't be published yet.",
+    "summary": "A draft post summary",
+    "published": false
+}
