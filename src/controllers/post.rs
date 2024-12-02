@@ -3,6 +3,7 @@
 #![allow(clippy::unused_async)]
 use axum::debug_handler;
 use loco_rs::prelude::*;
+use sea_orm::{Order, QueryOrder};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -87,6 +88,7 @@ pub async fn my_posts(auth: auth::JWT, State(ctx): State<AppContext>) -> Result<
         Entity::find()
             // .filter(Entity::posts::Column::UserId.eq(Some(auth.claims.pid)))
             .filter(crate::models::_entities::posts::Column::UserId.eq(Uuid::parse_str(&auth.claims.pid).unwrap()))
+            .order_by(crate::models::_entities::posts::Column::PublishedAt, Order::Desc)
             .all(&ctx.db)
             .await?,
     )
