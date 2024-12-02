@@ -16,7 +16,7 @@ pub struct Params {
     pub slug: Option<String>,
     pub user_id: Option<i32>,
     pub published_at: Option<DateTimeWithTimeZone>,
-    }
+}
 
 impl Params {
     fn update(&self, item: &mut ActiveModel) {
@@ -27,7 +27,7 @@ impl Params {
       item.slug = Set(self.slug.clone());
       item.user_id = Set(self.user_id.clone());
       item.published_at = Set(self.published_at.clone());
-      }
+    }
 }
 
 async fn load_item(ctx: &AppContext, id: i32) -> Result<Model> {
@@ -74,6 +74,17 @@ pub async fn get_one(Path(id): Path<i32>, State(ctx): State<AppContext>) -> Resu
     format::json(load_item(&ctx, id).await?)
 }
 
+#[debug_handler]
+pub async fn my_posts(
+    auth: auth::JWT,
+    State(ctx): State<AppContext>
+) -> Result<Response> {
+    format::json(Entity::find()
+        .filter(crate::models::_entities::posts::Column::UserId.eq(auth.claims.pid))
+        .all(&ctx.db)
+        .await?)
+}
+
 pub fn routes() -> Routes {
     Routes::new()
         .prefix("api/posts/")
@@ -83,4 +94,5 @@ pub fn routes() -> Routes {
         .add(":id", delete(remove))
         .add(":id", put(update))
         .add(":id", patch(update))
+        .add("my", get(my_posts))
 }
