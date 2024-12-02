@@ -1,0 +1,49 @@
+@baseUrl = http://localhost:5150/api/auth
+
+### Register a new user
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+    "name": "Test User",
+    "email": "test@example.com",
+    "password": "your_password"
+}
+
+### Verify email
+POST {{baseUrl}}/verify
+Content-Type: application/json
+
+{
+    "token": "9a1904e1-d877-4e3e-925f-7da222b54c04"
+}
+
+### Login
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "test@example.com",
+    "password": "your_password"
+}
+
+### Get current user (requires auth token)
+GET {{baseUrl}}/current
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJwaWQiOiJjM2Q4N2MzNS1hNjI0LTQ1MDItYmQwYS0xN2ZjOGZkMmI1NTYiLCJleHAiOjE3MzM3NjE5MjQsImNsYWltcyI6bnVsbH0.3QGiP91H3c_2xBa3e8FX-DfZ5MLs7I3bETWXmFLMOrEBlOBY3dwnEYvVVYXmwpqe-cfpPhp62A0x4_QpKWdMsQ
+
+### Forgot password
+POST {{baseUrl}}/forgot
+Content-Type: application/json
+
+{
+    "email": "test@example.com"
+}
+
+### Reset password
+POST {{baseUrl}}/reset
+Content-Type: application/json
+
+{
+    "token": "your_reset_token",
+    "password": "new_password"
+}
