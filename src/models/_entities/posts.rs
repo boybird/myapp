@@ -2,6 +2,7 @@
 
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "posts")]
@@ -16,7 +17,7 @@ pub struct Model {
     pub summary: Option<String>,
     pub published: Option<bool>,
     pub slug: Option<String>,
-    pub user_id: Option<i32>,
+    pub user_id: Option<Uuid>,
     pub published_at: Option<DateTimeWithTimeZone>,
 }
 

@@ -1,9 +1,10 @@
 #![allow(clippy::missing_errors_doc)]
 #![allow(clippy::unnecessary_struct_initialization)]
 #![allow(clippy::unused_async)]
+use axum::debug_handler;
 use loco_rs::prelude::*;
 use serde::{Deserialize, Serialize};
-use axum::debug_handler;
+use uuid::Uuid;
 
 use crate::models::_entities::posts::{ActiveModel, Entity, Model};
 
@@ -14,19 +15,19 @@ pub struct Params {
     pub summary: Option<String>,
     pub published: Option<bool>,
     pub slug: Option<String>,
-    pub user_id: Option<i32>,
+    pub user_id: Option<Uuid>,
     pub published_at: Option<DateTimeWithTimeZone>,
 }
 
 impl Params {
     fn update(&self, item: &mut ActiveModel) {
-      item.title = Set(self.title.clone());
-      item.content = Set(self.content.clone());
-      item.summary = Set(self.summary.clone());
-      item.published = Set(self.published.clone());
-      item.slug = Set(self.slug.clone());
-      item.user_id = Set(self.user_id.clone());
-      item.published_at = Set(self.published_at.clone());
+        item.title = Set(self.title.clone());
+        item.content = Set(self.content.clone());
+        item.summary = Set(self.summary.clone());
+        item.published = Set(self.published.clone());
+        item.slug = Set(self.slug.clone());
+        item.user_id = Set(self.user_id);
+        item.published_at = Set(self.published_at.clone());
     }
 }
 
@@ -41,11 +42,17 @@ pub async fn list(State(ctx): State<AppContext>) -> Result<Response> {
 }
 
 #[debug_handler]
-pub async fn add(State(ctx): State<AppContext>, Json(params): Json<Params>) -> Result<Response> {
+pub async fn add(
+    auth: auth::JWT,
+    State(ctx): State<AppContext>,
+    Json(params): Json<Params>,
+) -> Result<Response> {
     let mut item = ActiveModel {
         ..Default::default()
     };
     params.update(&mut item);
+    item.user_id = Set(Some(Uuid::parse_str(&auth.claims.pid).unwrap()));
+
     let item = item.insert(&ctx.db).await?;
     format::json(item)
 }
@@ -75,14 +82,14 @@ pub async fn get_one(Path(id): Path<i32>, State(ctx): State<AppContext>) -> Resu
 }
 
 #[debug_handler]
-pub async fn my_posts(
-    auth: auth::JWT,
-    State(ctx): State<AppContext>
-) -> Result<Response> {
-    format::json(Entity::find()
-        .filter(crate::models::_entities::posts::Column::UserId.eq(auth.claims.pid))
-        .all(&ctx.db)
-        .await?)
+pub async fn my_posts(auth: auth::JWT, State(ctx): State<AppContext>) -> Result<Response> {
+    format::json(
+        Entity::find()
+            // .filter(Entity::posts::Column::UserId.eq(Some(auth.claims.pid)))
+            .filter(crate::models::_entities::posts::Column::UserId.eq(Uuid::parse_str(&auth.claims.pid).unwrap()))
+            .all(&ctx.db)
+            .await?,
+    )
 }
 
 pub fn routes() -> Routes {
