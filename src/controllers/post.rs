@@ -75,9 +75,16 @@ pub async fn update(
     Json(params): Json<Params>,
 ) -> Result<Response> {
     let item = load_item(&ctx, id).await?;
-    let mut item = item.into_active_model();
-    params.update(&mut item);
-    let item = item.update(&ctx.db).await?;
+    let mut active_item = item.clone().into_active_model();
+    
+    // Create new params with the existing user_id if not provided
+    let mut updated_params = params;
+    if updated_params.user_id.is_none() {
+        updated_params.user_id = item.user_id;
+    }
+    
+    updated_params.update(&mut active_item);
+    let item = active_item.update(&ctx.db).await?;
     format::json(item)
 }
 

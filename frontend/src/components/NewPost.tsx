@@ -7,6 +7,7 @@ interface Post {
   content: string;
   summary: string;
   published: boolean;
+  user_id: string | null;
 }
 
 export const NewPost = () => {
@@ -19,6 +20,7 @@ export const NewPost = () => {
     content: '',
     summary: '',
     published: false,
+    user_id: null as string | null,
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(isEditing);
@@ -47,6 +49,7 @@ export const NewPost = () => {
             content: post.content,
             summary: post.summary,
             published: post.published,
+            user_id: post.user_id,
           });
         } else {
           setError('Failed to fetch post');
