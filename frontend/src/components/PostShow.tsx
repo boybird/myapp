@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface Post {
   id: number;
@@ -95,7 +98,31 @@ export const PostShow = () => {
 
         <div className="prose max-w-none">
           <div className="text-xl text-gray-600 mb-8">{post.summary}</div>
-          <div className="whitespace-pre-wrap">{post.content}</div>
+          <article className="markdown-content">
+            <ReactMarkdown
+              components={{
+                code({node, inline, className, children, ...props}) {
+                  const match = /language-(\w+)/.exec(className || '');
+                  return !inline && match ? (
+                    <SyntaxHighlighter
+                      style={tomorrow}
+                      language={match[1]}
+                      PreTag="div"
+                      {...props}
+                    >
+                      {String(children).replace(/\n$/, '')}
+                    </SyntaxHighlighter>
+                  ) : (
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  );
+                }
+              }}
+            >
+              {post.content}
+            </ReactMarkdown>
+          </article>
         </div>
       </div>
     </div>

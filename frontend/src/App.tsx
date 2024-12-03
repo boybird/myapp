@@ -5,6 +5,7 @@ import { LocoSplash } from './LocoSplash';
 import { Dashboard } from './components/Dashboard';
 import { NewPost } from './components/NewPost';
 import { PostShow } from './components/PostShow';
+import './styles/markdown.css';
 
 const App = () => {
   return (
