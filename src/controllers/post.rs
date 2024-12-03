@@ -28,7 +28,17 @@ impl Params {
         item.published = Set(self.published.clone());
         item.slug = Set(self.slug.clone());
         item.user_id = Set(self.user_id);
-        item.published_at = Set(self.published_at.clone());
+        
+        // Set published_at based on published value
+        if let Some(published) = self.published {
+            if published {
+                item.published_at = Set(Some(chrono::Utc::now().into()));
+            } else {
+                item.published_at = Set(None);
+            }
+        } else {
+            item.published_at = Set(self.published_at.clone());
+        }
     }
 }
 
