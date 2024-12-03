@@ -65,7 +65,11 @@ export const Dashboard = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map((post) => (
-            <div key={post.id} className="bg-white rounded-lg shadow-md p-6">
+            <div 
+              key={post.id} 
+              className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => navigate(`/post/${post.id}`)}
+            >
               <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
               <p className="text-gray-600 mb-4">{post.summary}</p>
               <div className="flex justify-between items-center text-sm text-gray-500">
