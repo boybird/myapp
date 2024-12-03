@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+
+interface Post {
+  id: number;
+  title: string;
+  content: string;
+  summary: string;
+  published: boolean;
+}
 
 export const NewPost = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditing = !!id;
+
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -10,6 +21,45 @@ export const NewPost = () => {
     published: false,
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(isEditing);
+
+  useEffect(() => {
+    const fetchPost = async () => {
+      if (!isEditing) return;
+
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/');
+          return;
+        }
+
+        const response = await fetch(`/api/posts/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const post = await response.json();
+          setFormData({
+            title: post.title,
+            content: post.content,
+            summary: post.summary,
+            published: post.published,
+          });
+        } else {
+          setError('Failed to fetch post');
+        }
+      } catch (error) {
+        setError('Failed to fetch post');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPost();
+  }, [id, isEditing, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -37,8 +87,11 @@ export const NewPost = () => {
         return;
       }
 
-      const response = await fetch('/api/posts', {
-        method: 'POST',
+      const url = isEditing ? `/api/posts/${id}` : '/api/posts';
+      const method = isEditing ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -50,17 +103,21 @@ export const NewPost = () => {
         navigate('/dashboard');
       } else {
         const data = await response.json();
-        setError(data.message || 'Failed to create post');
+        setError(data.message || `Failed to ${isEditing ? 'update' : 'create'} post`);
       }
     } catch (error) {
-      setError('Failed to create post');
+      setError(`Failed to ${isEditing ? 'update' : 'create'} post`);
     }
   };
+
+  if (loading) {
+    return <div className="container mx-auto px-4 py-8">Loading...</div>;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Create New Post</h1>
+        <h1 className="text-3xl font-bold mb-8">{isEditing ? 'Edit Post' : 'Create New Post'}</h1>
         
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -136,7 +193,7 @@ export const NewPost = () => {
               type="submit"
               className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md"
             >
-              Create Post
+              {isEditing ? 'Update Post' : 'Create Post'}
             </button>
           </div>
         </form>

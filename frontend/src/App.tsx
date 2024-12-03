@@ -14,6 +14,7 @@ const App = () => {
           <Route path="/" element={<LocoSplash />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/new-post" element={<NewPost />} />
+          <Route path="/edit-post/:id" element={<NewPost />} />
           <Route path="/post/:id" element={<PostShow />} />
         </Routes>
       </Layout>
