@@ -7,6 +7,7 @@ mod m20220101_000001_users;
 mod m20241202_173429_posts;
 mod m20240104_000001_alter_posts_user_id_to_uuid;
 
+mod m20241204_155109_comments;
 pub struct Migrator;
 
 #[async_trait::async_trait]
@@ -16,6 +17,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20220101_000001_users::Migration),
             Box::new(m20241202_173429_posts::Migration),
             Box::new(m20240104_000001_alter_posts_user_id_to_uuid::Migration),
+            Box::new(m20241204_155109_comments::Migration),
             // inject-above (do not remove this comment)
         ]
     }
