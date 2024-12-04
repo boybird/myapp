@@ -4,7 +4,7 @@
 use axum::debug_handler;
 use axum::extract::{Path, Query, State};
 use loco_rs::prelude::*;
-use sea_orm::{Order, PaginatorTrait, QueryOrder};
+use sea_orm::{PaginatorTrait, QueryOrder};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

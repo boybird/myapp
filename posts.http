@@ -28,7 +28,7 @@ Authorization: Bearer {{authToken}}
 }
 
 ### Get all published posts (public endpoint)
-GET {{baseUrl}}/api/posts
+GET {{baseUrl}}/api/posts?page=1&page_size=2
 
 ### Get all my posts (including drafts)
 GET {{baseUrl}}/api/posts/my
