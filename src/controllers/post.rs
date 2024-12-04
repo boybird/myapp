@@ -42,6 +42,11 @@ impl Params {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PublishParams {
+    pub published: bool,
+}
+
 async fn load_item(ctx: &AppContext, id: i32) -> Result<Model> {
     let item = Entity::find_by_id(id).one(&ctx.db).await?;
     item.ok_or_else(|| Error::NotFound)
@@ -89,6 +94,27 @@ pub async fn update(
 }
 
 #[debug_handler]
+pub async fn publish(
+    Path(id): Path<i32>,
+    State(ctx): State<AppContext>,
+    Json(params): Json<PublishParams>,
+) -> Result<Response> {
+    let item = load_item(&ctx, id).await?;
+    let mut active_item = item.into_active_model();
+    
+    active_item.published = Set(Some(params.published));
+    // Update published_at timestamp when publishing
+    if params.published {
+        active_item.published_at = Set(Some(chrono::Utc::now().into()));
+    } else {
+        active_item.published_at = Set(None);
+    }
+    
+    let item = active_item.update(&ctx.db).await?;
+    format::json(item)
+}
+
+#[debug_handler]
 pub async fn remove(Path(id): Path<i32>, State(ctx): State<AppContext>) -> Result<Response> {
     load_item(&ctx, id).await?.delete(&ctx.db).await?;
     format::empty()
@@ -120,5 +146,6 @@ pub fn routes() -> Routes {
         .add(":id", delete(remove))
         .add(":id", put(update))
         .add(":id", patch(update))
+        .add(":id/publish", patch(publish))
         .add("my", get(my_posts))
 }
