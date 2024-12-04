@@ -5,6 +5,7 @@ import { LocoSplash } from './LocoSplash';
 import { Dashboard } from './components/Dashboard';
 import { NewPost } from './components/NewPost';
 import { PostShow } from './components/PostShow';
+import { Home } from './components/Home';
 import './styles/markdown.css';
 
 const App = () => {
@@ -12,7 +13,7 @@ const App = () => {
     <Router>
       <Layout>
         <Routes>
-          <Route path="/" element={<LocoSplash />} />
+          <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/new-post" element={<NewPost />} />
           <Route path="/edit-post/:id" element={<NewPost />} />
