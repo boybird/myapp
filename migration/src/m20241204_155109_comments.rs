@@ -13,7 +13,7 @@ impl MigrationTrait for Migration {
                     .col(pk_auto(Comments::Id))
                     .col(text_null(Comments::Content))
                     .col(integer_null(Comments::PostId))
-                    .col(uuid_uniq(Comments::UserId))
+                    .col(uuid(Comments::UserId))
                     .col(integer_null(Comments::ParentId))
                     .to_owned(),
             )
