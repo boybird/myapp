@@ -2,12 +2,13 @@
 #![allow(clippy::unnecessary_struct_initialization)]
 #![allow(clippy::unused_async)]
 use axum::debug_handler;
+use axum::extract::{Path, Query, State};
 use loco_rs::prelude::*;
-use sea_orm::{Order, QueryOrder};
+use sea_orm::{Order, PaginatorTrait, QueryOrder};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::models::_entities::posts::{ActiveModel, Entity, Model};
+use crate::models::_entities::posts::{ActiveModel, Column, Entity, Model};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Params {
@@ -47,14 +48,59 @@ pub struct PublishParams {
     pub published: bool,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PaginationParams {
+    #[serde(default = "default_page")]
+    pub page: u64,
+    #[serde(default = "default_page_size")]
+    pub page_size: u64,
+}
+
+fn default_page() -> u64 {
+    1
+}
+
+fn default_page_size() -> u64 {
+    10
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PaginatedResponse<T> {
+    pub items: Vec<T>,
+    pub total: u64,
+    pub page: u64,
+    pub page_size: u64,
+    pub total_pages: u64,
+}
+
 async fn load_item(ctx: &AppContext, id: i32) -> Result<Model> {
     let item = Entity::find_by_id(id).one(&ctx.db).await?;
     item.ok_or_else(|| Error::NotFound)
 }
 
 #[debug_handler]
-pub async fn list(State(ctx): State<AppContext>) -> Result<Response> {
-    format::json(Entity::find().all(&ctx.db).await?)
+pub async fn list(
+    State(ctx): State<AppContext>,
+    Query(params): Query<PaginationParams>,
+) -> Result<Response> {
+    let page = params.page.max(1) - 1;
+    let page_size = params.page_size.max(1);
+
+    let paginator = Entity::find()
+        .order_by_desc(Column::PublishedAt)
+        .paginate(&ctx.db, page_size);
+
+    let total = paginator.num_items().await?;
+    let total_pages = (total + page_size - 1) / page_size;
+    let items = paginator.fetch_page(page).await?;
+
+    format::json(PaginatedResponse {
+        items,
+        total,
+        page: page + 1,
+        page_size,
+        total_pages,
+    })
 }
 
 #[debug_handler]
@@ -126,15 +172,30 @@ pub async fn get_one(Path(id): Path<i32>, State(ctx): State<AppContext>) -> Resu
 }
 
 #[debug_handler]
-pub async fn my_posts(auth: auth::JWT, State(ctx): State<AppContext>) -> Result<Response> {
-    format::json(
-        Entity::find()
-            // .filter(Entity::posts::Column::UserId.eq(Some(auth.claims.pid)))
-            .filter(crate::models::_entities::posts::Column::UserId.eq(Uuid::parse_str(&auth.claims.pid).unwrap()))
-            .order_by(crate::models::_entities::posts::Column::PublishedAt, Order::Desc)
-            .all(&ctx.db)
-            .await?,
-    )
+pub async fn my_posts(
+    auth: auth::JWT,
+    State(ctx): State<AppContext>,
+    Query(params): Query<PaginationParams>,
+) -> Result<Response> {
+    let page = params.page.max(1) - 1;
+    let page_size = params.page_size.max(1);
+
+    let paginator = Entity::find()
+        .filter(Column::UserId.eq(Uuid::parse_str(&auth.claims.pid).unwrap()))
+        .order_by_desc(Column::PublishedAt)
+        .paginate(&ctx.db, page_size);
+
+    let total = paginator.num_items().await?;
+    let total_pages = (total + page_size - 1) / page_size;
+    let items = paginator.fetch_page(page).await?;
+
+    format::json(PaginatedResponse {
+        items,
+        total,
+        page: page + 1,
+        page_size,
+        total_pages,
+    })
 }
 
 pub fn routes() -> Routes {
