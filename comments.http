@@ -1,0 +1,61 @@
+@baseUrl = http://localhost:5150
+
+@email = test@example.com
+@password = your_password
+
+### Login first to get token
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "{{email}}",
+    "password": "{{password}}"
+}
+
+
+### Store the JWT token from the login response
+@authToken = {{login.response.body.token}}
+
+### Create a new comment
+POST {{baseUrl}}/api/comments
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "content": "This is a test comment",
+    "post_id": 1,
+    "parent_id": null
+}
+
+### Create a reply comment
+POST {{baseUrl}}/api/comments
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": "This is a reply to the first comment",
+    "post_id": 1,
+    "parent_id": 1
+}
+
+### Get all comments
+GET {{baseUrl}}/api/comments
+
+### Get a specific comment
+GET {{baseUrl}}/api/comments/1
+
+### Update a comment (only owner can update)
+PUT {{baseUrl}}/api/comments/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": "Updated comment content",
+    "post_id": 1,
+    "parent_id": null
+}
+
+### Delete a comment (only owner can delete)
+DELETE {{baseUrl}}/api/comments/1
+Authorization: Bearer {{token}}

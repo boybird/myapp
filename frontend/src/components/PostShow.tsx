@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { Comments } from './Comments';
 
 interface Post {
   id: number;
@@ -123,6 +124,9 @@ export const PostShow = () => {
               {post.content}
             </ReactMarkdown>
           </article>
+          
+          {/* Add Comments section */}
+          <Comments postId={post.id} />
         </div>
       </div>
     </div>
