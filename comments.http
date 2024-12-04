@@ -31,7 +31,7 @@ Authorization: Bearer {{authToken}}
 ### Create a reply comment
 POST {{baseUrl}}/api/comments
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{authToken}}
 
 {
     "content": "This is a reply to the first comment",
@@ -48,7 +48,7 @@ GET {{baseUrl}}/api/comments/1
 ### Update a comment (only owner can update)
 PUT {{baseUrl}}/api/comments/1
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{authToken}}
 
 {
     "content": "Updated comment content",
@@ -58,4 +58,4 @@ Authorization: Bearer {{token}}
 
 ### Delete a comment (only owner can delete)
 DELETE {{baseUrl}}/api/comments/1
-Authorization: Bearer {{token}}
+Authorization: Bearer {{authToken}}
