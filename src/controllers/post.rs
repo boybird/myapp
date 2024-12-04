@@ -73,6 +73,35 @@ pub struct PaginatedResponse<T> {
     pub total_pages: u64,
 }
 
+#[derive(Clone, Debug, Serialize)]
+pub struct PostListItem {
+    pub id: i32,
+    pub title: Option<String>,
+    pub summary: Option<String>,
+    pub published: Option<bool>,
+    pub slug: Option<String>,
+    pub user_id: Option<Uuid>,
+    pub published_at: Option<DateTimeWithTimeZone>,
+    pub created_at: DateTimeWithTimeZone,
+    pub updated_at: DateTimeWithTimeZone,
+}
+
+impl From<Model> for PostListItem {
+    fn from(model: Model) -> Self {
+        Self {
+            id: model.id,
+            title: model.title,
+            summary: model.summary,
+            published: model.published,
+            slug: model.slug,
+            user_id: model.user_id,
+            published_at: model.published_at,
+            created_at: model.created_at,
+            updated_at: model.updated_at,
+        }
+    }
+}
+
 async fn load_item(ctx: &AppContext, id: i32) -> Result<Model> {
     let item = Entity::find_by_id(id).one(&ctx.db).await?;
     item.ok_or_else(|| Error::NotFound)
@@ -92,7 +121,12 @@ pub async fn list(
 
     let total = paginator.num_items().await?;
     let total_pages = (total + page_size - 1) / page_size;
-    let items = paginator.fetch_page(page).await?;
+    let items: Vec<PostListItem> = paginator
+        .fetch_page(page)
+        .await?
+        .into_iter()
+        .map(PostListItem::from)
+        .collect();
 
     format::json(PaginatedResponse {
         items,
@@ -187,7 +221,12 @@ pub async fn my_posts(
 
     let total = paginator.num_items().await?;
     let total_pages = (total + page_size - 1) / page_size;
-    let items = paginator.fetch_page(page).await?;
+    let items: Vec<PostListItem> = paginator
+        .fetch_page(page)
+        .await?
+        .into_iter()
+        .map(PostListItem::from)
+        .collect();
 
     format::json(PaginatedResponse {
         items,
