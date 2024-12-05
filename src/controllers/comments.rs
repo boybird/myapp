@@ -3,10 +3,10 @@
 #![allow(clippy::unused_async)]
 use loco_rs::prelude::*;
 use serde::{Deserialize, Serialize};
-use axum::debug_handler;
+use axum::{debug_handler, extract::Query};
 use uuid::Uuid;
 
-use crate::models::_entities::comments::{ActiveModel, Entity, Model};
+use crate::models::_entities::comments::{ActiveModel, Column, Entity, Model};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Params {
@@ -15,6 +15,11 @@ pub struct Params {
     #[serde(skip_deserializing)]
     pub user_id: Option<Uuid>,
     pub parent_id: Option<i32>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct QueryPostParams {
+    pub post_id: u64,
 }
 
 impl Params {
@@ -34,8 +39,12 @@ async fn load_item(ctx: &AppContext, id: i32) -> Result<Model> {
 }
 
 #[debug_handler]
-pub async fn list(State(ctx): State<AppContext>) -> Result<Response> {
-    format::json(Entity::find().all(&ctx.db).await?)
+pub async fn list(
+    Query(params): Query<QueryPostParams>,
+    State(ctx): State<AppContext>
+) -> Result<Response> {
+    let post_id = params.post_id;
+    format::json(Entity::find().filter(Column::PostId.eq(post_id)).all(&ctx.db).await?)
 }
 
 #[debug_handler]
